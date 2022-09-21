@@ -72,14 +72,6 @@ public class BLE : MonoBehaviour
             Write(1);
             setData(System.Text.Encoding.ASCII.GetString(Data));
         }
-        //for (int i = 0; i < MPRArray.Length; i++)
-        //{
-        //    if (MPRArray[i] < threshold)
-        //    {
-        //        Debug.Log("threshold met");
-        //        Write(1);
-        //    }
-        //}
     }
 
     void OnScanEnded(BluetoothHelper helper, LinkedList<BluetoothDevice> devices)
@@ -95,6 +87,7 @@ public class BLE : MonoBehaviour
 
         foreach (BluetoothDevice d in devices)
             Debug.Log(d.DeviceName);
+            
     }
     void OnConnected(BluetoothHelper helper)
     {
@@ -162,25 +155,6 @@ public class BLE : MonoBehaviour
                 }
             }
         }
-
-    //bool CheckTouch(int[] MPRArray)
-    //{
-    //    if (MPRArray == null)
-    //    {
-    //        return false;
-    //    }
-    //    this.MPRArray = MPRArray;
-    //    int threshold = 115;
-    //    for (int i = 0; i < MPRArray.Length; i++)
-    //    {
-    //        if (MPRArray[i] < threshold)
-    //        {
-    //            Debug.Log("threshold met");
-    //            return true;
-    //        }
-    //    }
-    //    return false;
-    //}
 
     void OnDestroy()
     {
