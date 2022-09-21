@@ -8,42 +8,45 @@
 #include "ArrayList.h"
 template<typename T>
 
-LSM6DS3 myIMU(I2C_MODE, 0x6A);    //I2C device address 0x6A
-Adafruit_DRV2605 drv;             //DRV Instantiation
+//Assign I2C device address to  0x6A
+LSM6DS3 myIMU(I2C_MODE, 0x6A);  
+//Instantiate DRV2605 var
+Adafruit_DRV2605 drv;           
 
-BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low Energy LED Service
+//Init Bluetooth® Low Energy LED Service
+BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214");
 
-// Bluetooth® Low Energy LED Switch Characteristic - custom 128-bit UUID, read and writable by central
+// Set BLE Characteristic UUID to read and writable
 BLECharacteristic switchCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify, 200);
-const int ledPin = LED_BUILTIN; // pin to use for the LED
+
+//LED Pin
+const int ledPin = LED_BUILTIN; 
 char data;
 
+//Instantiate MPR121 
 Adafruit_MPR121 cap = Adafruit_MPR121();
 
-// Change value to select which haptic effect to play
+// Haptic Effect Var
 uint8_t effect = 58;
+
 int mpr_values[12];
 int x;
 String mprData;
 String temp;
 char *buf;
-//char space = " ";
 
 // Pass argument 0-7 to select x I2C port
 void TCA9548A(uint8_t bus) {
   Wire.beginTransmission(0x70);  // TCA9548A address
   Wire.write(1 << bus);          // send byte to select bus
   Wire.endTransmission();
-  //Serial.print(bus);
 }
 
-// Initializes DRV2605L
+// Method to Init DRV2605L
 void drvInit() {
   TCA9548A(1);
   drv.begin();
   drv.selectLibrary(1);
-  // I2C trigger by sending 'go' command
-  // default, internal trigger when sending GO command
   drv.setMode(DRV2605_MODE_INTTRIG);
 }
 
@@ -54,7 +57,7 @@ void bleInit() {
     while (1);
   }
 
-  // set advertised local name and service UUID:
+  // set advertised local BLE name and service UUID:
   BLE.setLocalName("LED");
   BLE.setAdvertisedService(ledService);
 
@@ -89,10 +92,8 @@ void printAccel() {
 
 // This method stores filtered data from the MPR as a string array and converts it into a char type array to be sent
 // to Unity
-
 void printMPR() {
   TCA9548A(0);
-  //Serial.print("MPR Readings:\n");
   buf = (char*) malloc(sizeof(mpr_values));
   for (x = 0; x <= 11; x++) {
     mpr_values[x] = cap.filteredData(x);
@@ -100,33 +101,28 @@ void printMPR() {
     mprData = mprData + temp;
   }
   temp = "";
-  //Serial.print(mprData);
-  //Serial.print("\n");
+  // Convert MPR121 values to Array of Chars
   mprData.toCharArray(buf, sizeof(mpr_values));
   mprData = "";
+  // Write byte values to Unity Engine
   switchCharacteristic.writeValue(buf);
   free(buf);
-  //delay(10);
 }
 
 // Method that sends a signal to the DRV2605L for haptics
 void Touch() {
   TCA9548A(1);
-  drv.setWaveform(0, effect);  // play effect
-  drv.setWaveform(1, 0);       // end waveform
-  // play the effect!
+  drv.setWaveform(0, effect);  // Set starting Effect/Waveform sequence
+  drv.setWaveform(1, 0);       // Set ending Effect
+  //Play Effect
   drv.go();
 }
 
+// This function takes in a unsigned char sent from Unity and converts it into a readable int via bitwise shift left returned for use in a later function
 int convertData(const unsigned char data[], int length) {
   int temp = 0;
   for (int i = 0; i < length; i++) {
     unsigned char b = data[i];
-    //if (b < 16) {
-    //Serial.print("0");
-    //}
-    //Serial.println(b, HEX);
-    //Serial.println(b);
     temp << 8;
     temp += data[i];
   }
@@ -135,7 +131,7 @@ int convertData(const unsigned char data[], int length) {
   Serial.print("\n");
   return temp;
 }
-
+// This function 
 void checkThreshold() {
   if (switchCharacteristic.written()) {
     int temp = convertData(switchCharacteristic.value(), switchCharacteristic.valueLength());
