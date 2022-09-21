@@ -131,15 +131,8 @@ int convertData(const unsigned char data[], int length) {
   Serial.print("\n");
   return temp;
 }
-// This function 
-void checkThreshold() {
-  if (switchCharacteristic.written()) {
-    int temp = convertData(switchCharacteristic.value(), switchCharacteristic.valueLength());
-    if (temp == 1) {
-      Touch();
-    }
-  }
-}
+
+// Arduino Setup Code
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -165,6 +158,8 @@ void setup() {
   bleInit();
 }
 
+// Arduino will loop continously, checking to see if a response is sent from the Unity APP in order to activate haptic motors. MPR121 & threshold values are checked
+// within Unity 
 void loop() {
   // listen for Bluetooth® Low Energy peripherals to connect:
   BLEDevice central = BLE.central();
